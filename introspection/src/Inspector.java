@@ -78,13 +78,35 @@ public class Inspector {
 			// print out the return type of classMethod
 			System.out.println("\t Return Type: " + classMethodReturnType.getName());
 			
-			// use getModifiers() to get the modifier applied to classMethod
+			// use getModifiers() to get the int representaiton of modifiers applied to classMethod
 			int classMethodModifiers = classMethod.getModifiers();
-			// print out the modifiers applied to classMethod, using tostring from Modifier class
+			// print out the modifiers applied to classMethod, using toString from Modifier class
 			System.out.println("\t Modifiers: " + Modifier.toString(classMethodModifiers));
 			
-			
-			
+			// print out header title for declared constructors of class
+			System.out.println("Declared Constructors:");
+			// use getDeclaredConstructors() to get all of the constructors the class declares
+			Constructor[] classConstructors = classObject.getDeclaredConstructors();
+			// iterate through each element in classConstructors
+			for (Constructor classConstructor : classConstructors) {
+				// print out the name of classConstructor
+				System.out.println("\t" + classConstructor.getName());
+				
+				// use getParameterTypes() to get all of the parameter types of classConstructor
+				Class[] classConstructorParameterTypes = classConstructor.getParameterTypes();
+				// print out header title for parameter types of classMethod
+				System.out.println("\t Parameter Types:");
+				// iterate through each element in classMethodParameterTypes
+				for (Class classMethodParameterType : classMethodParameterTypes) {
+					// print out the name of each parameter type for classMethod
+					System.out.println("\t\t" + classMethodParameterType.getName());
+				}
+				
+				// use getModifiers() to get the int representation of modifiers applied to classConstructor
+				int classConstructorModifiers = classConstructor.getModifiers();
+				// print out the modifiers applied to classConstructor, using toString from Modifier class
+				System.out.println("\t Modifiers: " + Modifier.toString(classConstructorModifiers));
+			}
 		}
 		
 	}
