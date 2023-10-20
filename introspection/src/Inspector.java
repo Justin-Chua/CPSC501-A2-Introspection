@@ -5,20 +5,23 @@ public class Inspector {
 	
 	public void inspectDeclaringClass(Class classObject) {
 		// initialize String used to hold name of declaring class of obj
-		Class declaringClass;
+		String declaringClassName = "";
 		// here we try to fetch the name of the declaring class of obj if it exists
 		try {
-			declaringClass = classObject.getDeclaringClass();
-			// print out the name of the declaring class
-			System.out.println("Name of Declaring Class:" + declaringClass.getName());
+			declaringClassName = classObject.getDeclaringClass().getName();
 		} catch (SecurityException | NullPointerException e) { }
+		// print out the name of the declaring class
+		System.out.println("Name of Declaring Class:" + declaringClassName);
 	}
 	
 	public void inspectSuperclass(Class classObject) {
-		// get the immediate superclass of our object
-		Class superclass = classObject.getSuperclass();
+		String superclassName = "";
+		// try to get the immediate superclass of our object
+		try {
+			superclassName = classObject.getSuperclass().getName();
+		} catch (SecurityException | NullPointerException e) { }
 		// print out the name of the superclass
-		System.out.println("Name of Superclass: " + superclass.getName());
+		System.out.println("Name of Superclass: " + superclassName);
 		
 		// print out header title for the interfaces of the class
 		System.out.println("Implemented Interfaces:");
@@ -165,15 +168,11 @@ public class Inspector {
 		}
 	}
 	
-	public void inspect(Object obj, boolean recursive) {
-		
+	public void inspectObject(Object obj, Class classObject, List<Integer> objectsInspected, boolean recursive) {
 		// print out name of object being inspected during this execution
 		System.out.println("Object Inspected: " + obj);
 		// print out current status of recursion
 		System.out.println("Recursion Status: " + recursive);
-		
-		// use getClass() to get Class object from obj
-		Class classObject = obj.getClass();
 		
 		inspectDeclaringClass(classObject);
 		
@@ -184,6 +183,26 @@ public class Inspector {
 		inspectDeclaredConstructors(classObject);
 		
 		inspectFields(obj, classObject);
+		
+		// add obj to objectsInspected
+		objectsInspected.add(obj.hashCode());
+		// check if recursion is enabled
+		if (recursive) {
+			// if so, we want to traverse to superclass if not null
+			if (classObject.getSuperclass() != null)
+				inspectObject(obj, classObject.getSuperclass(), objectsInspected, recursive);
+			// similarly, we want to traverse to all superinterfaces
+			for (Class classInterface : classObject.getInterfaces())
+				inspectObject(obj, classInterface, objectsInspected, recursive);
+		}
+	}
+	
+	public void inspect(Object obj, boolean recursive) {
+		
+		// initialize ArrayList of int to keep track of Object hashcodes
+		List<Integer> objectsInspected = new ArrayList<Integer>();
+		// call helper method inspectObject() to begin recursion
+		inspectObject(obj, obj.getClass(), objectsInspected, recursive);
 		
 	}
 }
