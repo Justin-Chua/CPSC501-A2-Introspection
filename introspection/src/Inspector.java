@@ -1,3 +1,4 @@
+import java.util.*;
 import java.lang.reflect.*;
 
 public class Inspector {
@@ -52,7 +53,6 @@ public class Inspector {
 			}
 			// print out the name of classMethod
 			System.out.println("\t" + classMethod.getName());
-			
 			// use getExceptionTypes() to get all of the exceptions thrown by classMethod
 			Class[] classMethodExceptions = classMethod.getExceptionTypes();
 			// print out header title for exceptions of classMethod
@@ -124,26 +124,44 @@ public class Inspector {
 				// continue to the next class method
 				continue;
 			}
-			
 			// print out the name of classField
 			System.out.println("\t" + classField.getName());
-			
 			// use getType() to get the type of classField
 			Class classFieldType = classField.getType();
 			// print out the type of classField
-			System.out.println("\t Type:" + classFieldType.getName());
+			System.out.println("\t Type: " + classFieldType.getName());
 			
 			// use getModifiers() to get the int representation of modifiers applied to classField
 			int classFieldModifiers = classField.getModifiers();
 			// print out the modifiers applied to classField, using toString from Modifier class
 			System.out.println("\t Modifiers: " + Modifier.toString(classFieldModifiers));
 			
-			// invoke get() on classField to attempt to fetch value of the field
-			try {
-				Object classFieldValue = classField.get(obj);
-				// print out the value of classField
-				System.out.println("\t Value: " + classFieldValue);
-			} catch (IllegalAccessException e) { }
+			// check if classField is an array using isArray(), as these are handled differently
+			if (classFieldType.isArray()) {
+				// get component type of classField using getComponentType()
+				Class classFieldComponentType = classFieldType.getComponentType();
+				// print out the component type of classField
+				System.out.println("\t Component Type: " + classFieldComponentType.getName());
+				// try to get length of classField using Array.getLength()
+				try {
+					int classFieldLength = Array.getLength(classField.get(obj));
+					// print out the length of classField
+					System.out.println("\t Length: " + classFieldLength);
+					// print out components of classField
+					List<Object> classFieldArray = new ArrayList<Object>();
+					for (int i = 0; i < classFieldLength; i++)
+						classFieldArray.add(Array.get(classField.get(obj), i));
+					System.out.println("\t Contents: " + classFieldArray);
+					
+				} catch (IllegalAccessException e) { }
+			} else {
+				// invoke get() on classField to attempt to fetch value of the field
+				try {
+					Object classFieldValue = classField.get(obj);
+					// print out the value of classField
+					System.out.println("\t Value: " + classFieldValue);
+				} catch (IllegalAccessException e) { }
+			}
 		}
 		
 	}
