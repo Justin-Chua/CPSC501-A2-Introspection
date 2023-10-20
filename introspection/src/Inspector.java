@@ -2,25 +2,19 @@ import java.util.*;
 import java.lang.reflect.*;
 
 public class Inspector {
-	public void inspect(Object obj, boolean recursive) {
-		
-		// print out name of object being inspected during this execution
-		System.out.println("Object Inspected: " + obj);
-		// print out current status of recursion
-		System.out.println("Recursion Status: " + recursive);
-		
-		// use getClass() to get Class object from obj
-		Class classObject = obj.getClass();
-		
+	
+	public void inspectDeclaringClass(Class classObject) {
 		// initialize String used to hold name of declaring class of obj
-		String nameOfDeclaringClass = "";
+		Class declaringClass;
 		// here we try to fetch the name of the declaring class of obj if it exists
 		try {
-			nameOfDeclaringClass = classObject.getDeclaringClass().getName();
+			declaringClass = classObject.getDeclaringClass();
+			// print out the name of the declaring class
+			System.out.println("Name of Declaring Class:" + declaringClass.getName());
 		} catch (SecurityException | NullPointerException e) { }
-		// print out the name of the declaring class
-		System.out.println("Name of Declaring Class:" + nameOfDeclaringClass);
-		
+	}
+	
+	public void inspectSuperclass(Class classObject) {
 		// get the immediate superclass of our object
 		Class superclass = classObject.getSuperclass();
 		// print out the name of the superclass
@@ -35,7 +29,9 @@ public class Inspector {
 			// print out name of interface, with leading indent
 			System.out.println("\t" + classInterface.getName());
 		}
-		
+	}
+	
+	public void inspectDeclaredMethods(Class classObject) {
 		// print out header title for methods declared by class
 		System.out.println("Declared Methods:");
 		// use getDeclaredMethods() to get all of the methods that the class declares
@@ -83,7 +79,9 @@ public class Inspector {
 			// print out the modifiers applied to classMethod, using toString from Modifier class
 			System.out.println("\t Modifiers: " + Modifier.toString(classMethodModifiers));
 		}
-		
+	}
+	
+	public void inspectDeclaredConstructors(Class classObject) {
 		// print out header title for declared constructors of class
 		System.out.println("Declared Constructors:");
 		// use getDeclaredConstructors() to get all of the constructors the class declares
@@ -108,7 +106,9 @@ public class Inspector {
 			// print out the modifiers applied to classConstructor, using toString from Modifier class
 			System.out.println("\t Modifiers: " + Modifier.toString(classConstructorModifiers));
 		}
-		
+	}
+	
+	public void inspectFields (Object obj, Class classObject) {
 		// print out header title for declared fields of class
 		System.out.println("Declared Fields:");
 		// use getFields() to get all of the fields the class declares
@@ -163,6 +163,27 @@ public class Inspector {
 				} catch (IllegalAccessException e) { }
 			}
 		}
+	}
+	
+	public void inspect(Object obj, boolean recursive) {
+		
+		// print out name of object being inspected during this execution
+		System.out.println("Object Inspected: " + obj);
+		// print out current status of recursion
+		System.out.println("Recursion Status: " + recursive);
+		
+		// use getClass() to get Class object from obj
+		Class classObject = obj.getClass();
+		
+		inspectDeclaringClass(classObject);
+		
+		inspectSuperclass(classObject);
+		
+		inspectDeclaredMethods(classObject);
+		
+		inspectDeclaredConstructors(classObject);
+		
+		inspectFields(obj, classObject);
 		
 	}
 }
