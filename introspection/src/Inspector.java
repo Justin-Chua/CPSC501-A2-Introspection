@@ -170,18 +170,14 @@ public class Inspector {
 	
 	public void inspectObject(Object obj, Class classObject, List<Integer> objectsInspected, boolean recursive) {
 		// print out name of object being inspected during this execution
-		System.out.println("Object Inspected: " + obj);
+		System.out.println("Object Inspected: " + classObject.getName());
 		// print out current status of recursion
 		System.out.println("Recursion Status: " + recursive);
 		
 		inspectDeclaringClass(classObject);
-		
 		inspectSuperclass(classObject);
-		
 		inspectDeclaredMethods(classObject);
-		
 		inspectDeclaredConstructors(classObject);
-		
 		inspectFields(obj, classObject);
 		
 		// add obj to objectsInspected
@@ -189,11 +185,17 @@ public class Inspector {
 		// check if recursion is enabled
 		if (recursive) {
 			// if so, we want to traverse to superclass if not null
-			if (classObject.getSuperclass() != null)
+			if (classObject.getSuperclass() != null) {
+				// print out header, separating class inspection from superclass inspection
+				System.out.println("~~~~~~~ SUPERCLASS INSPECTION: " + classObject.getName() + " ~~~~~~~");
 				inspectObject(obj, classObject.getSuperclass(), objectsInspected, recursive);
+			}
 			// similarly, we want to traverse to all superinterfaces
-			for (Class classInterface : classObject.getInterfaces())
+			for (Class classInterface : classObject.getInterfaces()) {
+				// superclass separator
+				System.out.println("~~~~~~~ SUPERINTERFACE INSPECTION: " + classObject.getName() + " ~~~~~~~");
 				inspectObject(obj, classInterface, objectsInspected, recursive);
+			}
 		}
 	}
 	
