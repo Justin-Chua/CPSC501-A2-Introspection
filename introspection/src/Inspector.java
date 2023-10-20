@@ -98,9 +98,9 @@ public class Inspector {
 			// print out header title for parameter types of classMethod
 			System.out.println("\t Parameter Types:");
 			// iterate through each element in classMethodParameterTypes
-			for (Class classMethodParameterType : classMethodParameterTypes) {
+			for (Class classConstructorParameterType : classConstructorParameterTypes) {
 				// print out the name of each parameter type for classMethod
-				System.out.println("\t\t" + classMethodParameterType.getName());
+				System.out.println("\t\t" + classConstructorParameterType.getName());
 			}
 			
 			// use getModifiers() to get the int representation of modifiers applied to classConstructor
@@ -131,6 +131,19 @@ public class Inspector {
 			// use getType() to get the type of classField
 			Class classFieldType = classField.getType();
 			// print out the type of classField
+			System.out.println("\t Type:" + classFieldType.getName());
+			
+			// use getModifiers() to get the int representation of modifiers applied to classField
+			int classFieldModifiers = classField.getModifiers();
+			// print out the modifiers applied to classField, using toString from Modifier class
+			System.out.println("\t Modifiers: " + Modifier.toString(classFieldModifiers));
+			
+			// invoke get() on classField to attempt to fetch value of the field
+			try {
+				Object classFieldValue = classField.get(obj);
+				// print out the value of classField
+				System.out.println("\t Value: " + classFieldValue);
+			} catch (IllegalAccessException e) { }
 		}
 		
 	}
