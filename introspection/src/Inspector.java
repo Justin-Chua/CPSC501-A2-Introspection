@@ -82,31 +82,55 @@ public class Inspector {
 			int classMethodModifiers = classMethod.getModifiers();
 			// print out the modifiers applied to classMethod, using toString from Modifier class
 			System.out.println("\t Modifiers: " + Modifier.toString(classMethodModifiers));
+		}
+		
+		// print out header title for declared constructors of class
+		System.out.println("Declared Constructors:");
+		// use getDeclaredConstructors() to get all of the constructors the class declares
+		Constructor[] classConstructors = classObject.getDeclaredConstructors();
+		// iterate through each element in classConstructors
+		for (Constructor classConstructor : classConstructors) {
+			// print out the name of classConstructor
+			System.out.println("\t" + classConstructor.getName());
 			
-			// print out header title for declared constructors of class
-			System.out.println("Declared Constructors:");
-			// use getDeclaredConstructors() to get all of the constructors the class declares
-			Constructor[] classConstructors = classObject.getDeclaredConstructors();
-			// iterate through each element in classConstructors
-			for (Constructor classConstructor : classConstructors) {
-				// print out the name of classConstructor
-				System.out.println("\t" + classConstructor.getName());
-				
-				// use getParameterTypes() to get all of the parameter types of classConstructor
-				Class[] classConstructorParameterTypes = classConstructor.getParameterTypes();
-				// print out header title for parameter types of classMethod
-				System.out.println("\t Parameter Types:");
-				// iterate through each element in classMethodParameterTypes
-				for (Class classMethodParameterType : classMethodParameterTypes) {
-					// print out the name of each parameter type for classMethod
-					System.out.println("\t\t" + classMethodParameterType.getName());
-				}
-				
-				// use getModifiers() to get the int representation of modifiers applied to classConstructor
-				int classConstructorModifiers = classConstructor.getModifiers();
-				// print out the modifiers applied to classConstructor, using toString from Modifier class
-				System.out.println("\t Modifiers: " + Modifier.toString(classConstructorModifiers));
+			// use getParameterTypes() to get all of the parameter types of classConstructor
+			Class[] classConstructorParameterTypes = classConstructor.getParameterTypes();
+			// print out header title for parameter types of classMethod
+			System.out.println("\t Parameter Types:");
+			// iterate through each element in classMethodParameterTypes
+			for (Class classMethodParameterType : classMethodParameterTypes) {
+				// print out the name of each parameter type for classMethod
+				System.out.println("\t\t" + classMethodParameterType.getName());
 			}
+			
+			// use getModifiers() to get the int representation of modifiers applied to classConstructor
+			int classConstructorModifiers = classConstructor.getModifiers();
+			// print out the modifiers applied to classConstructor, using toString from Modifier class
+			System.out.println("\t Modifiers: " + Modifier.toString(classConstructorModifiers));
+		}
+		
+		// print out header title for declared fields of class
+		System.out.println("Declared Fields:");
+		// use getFields() to get all of the fields the class declares
+		Field[] classFields = classObject.getDeclaredFields();
+		// iterate through each element in classFields
+		for (Field classField : classFields) {
+			// here we try to set the field to be accessible in case if it is non-public
+			try {
+				classField.setAccessible(true);
+			} catch (SecurityException | InaccessibleObjectException e) {
+				// print message stating current method is inaccessible
+				System.out.println("\t" + classField.getName() + " is inaccessible");
+				// continue to the next class method
+				continue;
+			}
+			
+			// print out the name of classField
+			System.out.println("\t" + classField.getName());
+			
+			// use getType() to get the type of classField
+			Class classFieldType = classField.getType();
+			// print out the type of classField
 		}
 		
 	}
