@@ -165,7 +165,7 @@ public class Inspector {
 						// instantiate new ArrayList for each row
 						classFieldArray.add(new ArrayList<Object>());
 						Object classFieldRow = Array.get(classField.get(obj), i);
-						// chewck to see if classFieldRow is null
+						// check to see if classFieldRow is null
 						if (classFieldRow != null) {
 							// check to see if classFieldRow is also an array
 							if (classFieldRow.getClass().isArray()) {
@@ -182,13 +182,20 @@ public class Inspector {
 					System.out.println("\t Contents: " + classFieldArray);
 				} catch (IllegalAccessException e) { }
 			} else {
-				// invoke get() on classField to attempt to fetch value of the field
+				// if classField is not an array, then we just get the value of it and print it
 				try {
 					// print out the value of classField
 					System.out.println("\t Value: " + classField.get(obj));
 				} catch (IllegalAccessException e) { }
 			}
 			
+			/*
+			 * Add classField to classFieldsToInspect if it meets criteria:
+			 * - recursive is true
+			 * - classField is non-primitive
+			 * - classField has not been inspected previously
+			 * - value of classField is not null
+			 */
 			try {
 				if (recursive && !classField.getType().isPrimitive() && !objectsInspected.contains(classField.get(obj)) && classField.get(obj) != null)
 					classFieldsToInspect.add(classField);
@@ -196,10 +203,10 @@ public class Inspector {
 		}
 		
 		// recurse on all fields that need to be inspected
-		for (Field field : classFieldsToInspect) {
+		for (Field classFieldToInspect : classFieldsToInspect) {
 			try {
 				System.out.println("---------- FIELD INSPECTION: " + classObject.getCanonicalName() + " ----------");
-				inspectObject(field.get(obj), field.get(obj).getClass(), objectsInspected, recursive);
+				inspectObject(classFieldToInspect.get(obj), classFieldToInspect.get(obj).getClass(), objectsInspected, recursive);
 			} catch (IllegalAccessException e) { }
 		}
 		
@@ -222,10 +229,7 @@ public class Inspector {
 		// add obj to objectsInspected
 		objectsInspected.add(obj);
 		// print out name of object being inspected during this execution
-		if (classObject.isArray())
-			System.out.println("Object Inspected: " + classObject.getCanonicalName());
-		else
-			System.out.println("Object Inspected: " + classObject.getCanonicalName());
+		System.out.println("Object Inspected: " + classObject.getCanonicalName());
 		// print out current status of recursion
 		System.out.println("Recursion Status: " + recursive);
 		
