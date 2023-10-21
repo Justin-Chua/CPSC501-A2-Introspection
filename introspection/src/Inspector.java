@@ -22,7 +22,9 @@ public class Inspector {
 		} catch (SecurityException | NullPointerException e) { }
 		// print out the name of the superclass
 		System.out.println("Name of Superclass: " + superclassName);
-		
+	}
+	
+	public void inspectInterfaces(Class classObject) {
 		// print out header title for the interfaces of the class
 		System.out.println("Implemented Interfaces:");
 		// get array of all interfaces that are implemented by classObject
@@ -229,6 +231,7 @@ public class Inspector {
 		
 		inspectDeclaringClass(classObject);
 		inspectSuperclass(classObject);
+		inspectInterfaces(classObject);
 		inspectDeclaredMethods(classObject);
 		inspectDeclaredConstructors(classObject);
 		
