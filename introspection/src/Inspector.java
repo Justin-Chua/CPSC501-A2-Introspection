@@ -11,7 +11,7 @@ public class Inspector {
 			declaringClassName = classObject.getDeclaringClass().getCanonicalName();
 		} catch (SecurityException | NullPointerException e) { }
 		// print out the name of the declaring class
-		System.out.println("Name of Declaring Class:" + declaringClassName);
+		System.out.println("Name of Declaring Class: " + declaringClassName);
 	}
 	
 	public void inspectSuperclass(Class classObject) {
@@ -207,16 +207,13 @@ public class Inspector {
 		// base case - don't investigate object if it is null
 		if (obj == null)
 			return;
-		// base case - don't investigate object if it is a primitive
-		if ((obj != null && obj.getClass().isPrimitive()))
-			return;
 		// check to see if object we are currently inspecting is an Array (multidimensional field recursive case)
 		if (classObject.isArray()) {
 			// start by getting length of array
 			int objectArrayLength = Array.getLength(obj);
 			// iterate through each element in obj
 			for (int i = 0; i < objectArrayLength; i++) {
-				if (Array.get(obj, i) != null && !objectsInspected.contains(Array.get(obj, i)))
+				if (Array.get(obj, i) != null && !classObject.getComponentType().isPrimitive() && !objectsInspected.contains(Array.get(obj, i)))
 					inspectObject(Array.get(obj, i), Array.get(obj, i).getClass(), objectsInspected, recursive);
 			}
 		}
