@@ -8,7 +8,7 @@ public class Inspector {
 		String declaringClassName = "";
 		// here we try to fetch the name of the declaring class of obj if it exists
 		try {
-			declaringClassName = classObject.getDeclaringClass().getName();
+			declaringClassName = classObject.getDeclaringClass().getCanonicalName();
 		} catch (SecurityException | NullPointerException e) { }
 		// print out the name of the declaring class
 		System.out.println("Name of Declaring Class:" + declaringClassName);
@@ -18,7 +18,7 @@ public class Inspector {
 		String superclassName = "";
 		// try to get the immediate superclass of our object
 		try {
-			superclassName = classObject.getSuperclass().getName();
+			superclassName = classObject.getSuperclass().getCanonicalName();
 		} catch (SecurityException | NullPointerException e) { }
 		// print out the name of the superclass
 		System.out.println("Name of Superclass: " + superclassName);
@@ -30,7 +30,7 @@ public class Inspector {
 		// iterate through each element in classInterfaces
 		for (Class classInterface : classInterfaces)  {
 			// print out name of interface, with leading indent
-			System.out.println("\t" + classInterface.getName());
+			System.out.println("\t" + classInterface.getCanonicalName());
 		}
 	}
 	
@@ -59,7 +59,7 @@ public class Inspector {
 			// iterate through each element in classMethodExceptions
 			for (Class classMethodException : classMethodExceptions) {
 				// print out the name of each exception for classMethod
-				System.out.println("\t\t" + classMethodException.getName());
+				System.out.println("\t\t" + classMethodException.getCanonicalName());
 			}
 			
 			// use getParameterTypes() to get all of the parameter types of classMethod
@@ -69,13 +69,13 @@ public class Inspector {
 			// iterate through each element in classMethodParameterTypes
 			for (Class classMethodParameterType : classMethodParameterTypes) {
 				// print out the name of each parameter type for classMethod
-				System.out.println("\t\t" + classMethodParameterType.getName());
+				System.out.println("\t\t" + classMethodParameterType.getCanonicalName());
 			}
 			
 			// use getReturnType() to get return type of classMethod
 			Class classMethodReturnType = classMethod.getReturnType();
 			// print out the return type of classMethod
-			System.out.println("\t Return Type: " + classMethodReturnType.getName());
+			System.out.println("\t Return Type: " + classMethodReturnType.getCanonicalName());
 			
 			// use getModifiers() to get the int representaiton of modifiers applied to classMethod
 			int classMethodModifiers = classMethod.getModifiers();
@@ -101,7 +101,7 @@ public class Inspector {
 			// iterate through each element in classMethodParameterTypes
 			for (Class classConstructorParameterType : classConstructorParameterTypes) {
 				// print out the name of each parameter type for classMethod
-				System.out.println("\t\t" + classConstructorParameterType.getName());
+				System.out.println("\t\t" + classConstructorParameterType.getCanonicalName());
 			}
 			
 			// use getModifiers() to get the int representation of modifiers applied to classConstructor
@@ -111,7 +111,9 @@ public class Inspector {
 		}
 	}
 	
-	public void inspectFields (Object obj, Class classObject) {
+	public void inspectFields(Object obj, Class classObject, List<Object> objectsInspected, boolean recursive) {
+		// locally keep track of fields that need to be inspected
+		List<Field> classFieldsToInspect = new ArrayList<Field>();
 		// print out header title for declared fields of class
 		System.out.println("Declared Fields:");
 		// use getFields() to get all of the fields the class declares
@@ -132,7 +134,7 @@ public class Inspector {
 			// use getType() to get the type of classField
 			Class classFieldType = classField.getType();
 			// print out the type of classField
-			System.out.println("\t Type: " + classFieldType.getName());
+			System.out.println("\t Type: " + classFieldType.getCanonicalName());
 			
 			// use getModifiers() to get the int representation of modifiers applied to classField
 			int classFieldModifiers = classField.getModifiers();
@@ -144,33 +146,87 @@ public class Inspector {
 				// get component type of classField using getComponentType()
 				Class classFieldComponentType = classFieldType.getComponentType();
 				// print out the component type of classField
-				System.out.println("\t Component Type: " + classFieldComponentType.getName());
+				System.out.println("\t Component Type: " + classFieldComponentType.getCanonicalName());
+				
 				// try to get length of classField using Array.getLength()
 				try {
 					int classFieldLength = Array.getLength(classField.get(obj));
 					// print out the length of classField
 					System.out.println("\t Length: " + classFieldLength);
-					// print out components of classField
-					List<Object> classFieldArray = new ArrayList<Object>();
-					for (int i = 0; i < classFieldLength; i++)
-						classFieldArray.add(Array.get(classField.get(obj), i));
+					// check if recursive is false
+					if (!recursive)
+						// if so, print out the reference value of the array
+						System.out.println("\t Reference Value: " + classObject.getCanonicalName() + "@" + obj.hashCode());
+					// iterate through nested elements in classField
+					List<List<Object>> classFieldArray = new ArrayList<List<Object>>();
+					for (int i = 0; i < classFieldLength; i++) {
+						// instantiate new ArrayList for each row
+						classFieldArray.add(new ArrayList<Object>());
+						Object classFieldRow = Array.get(classField.get(obj), i);
+						// chewck to see if classFieldRow is null
+						if (classFieldRow != null) {
+							// check to see if classFieldRow is also an array
+							if (classFieldRow.getClass().isArray()) {
+								// calculate length of the row
+								int classFieldRowLength = Array.getLength(classFieldRow);
+								for (int j = 0; j < classFieldRowLength; j++) {
+									// add element to classFieldArray
+									System.out.println(Array.get(Array.get(classField.get(obj), i), j));
+									classFieldArray.get(i).add(j, Array.get(Array.get(classField.get(obj), i), j));
+								}
+							}
+						}
+					}
 					System.out.println("\t Contents: " + classFieldArray);
-					
 				} catch (IllegalAccessException e) { }
 			} else {
 				// invoke get() on classField to attempt to fetch value of the field
 				try {
-					Object classFieldValue = classField.get(obj);
 					// print out the value of classField
-					System.out.println("\t Value: " + classFieldValue);
+					System.out.println("\t Value: " + classField.get(obj));
 				} catch (IllegalAccessException e) { }
 			}
+			
+			try {
+				if (recursive && !classField.getType().isPrimitive() && !objectsInspected.contains(classField.get(obj)) && classField.get(obj) != null)
+					classFieldsToInspect.add(classField);
+			} catch (IllegalAccessException e) { }
 		}
+		
+		// recurse on all fields that need to be inspected
+		for (Field field : classFieldsToInspect) {
+			try {
+				System.out.println("---------- FIELD INSPECTION: " + classObject.getCanonicalName() + " ----------");
+				inspectObject(field.get(obj), field.get(obj).getClass(), objectsInspected, recursive);
+			} catch (IllegalAccessException e) { }
+		}
+		
 	}
 	
-	public void inspectObject(Object obj, Class classObject, List<Integer> objectsInspected, boolean recursive) {
+	public void inspectObject(Object obj, Class classObject, List<Object> objectsInspected, boolean recursive) {
+		// base case - don't investigate object if it is null
+		if (obj == null)
+			return;
+		// base case - don't investigate object if it is a primitive
+		if ((obj != null && obj.getClass().isPrimitive()))
+			return;
+		// check to see if object we are currently inspecting is an Array (multidimensional field recursive case)
+		if (classObject.isArray()) {
+			// start by getting length of array
+			int objectArrayLength = Array.getLength(obj);
+			// iterate through each element in obj
+			for (int i = 0; i < objectArrayLength; i++) {
+				if (Array.get(obj, i) != null && !objectsInspected.contains(Array.get(obj, i)))
+					inspectObject(Array.get(obj, i), Array.get(obj, i).getClass(), objectsInspected, recursive);
+			}
+		}
+		// add obj to objectsInspected
+		objectsInspected.add(obj);
 		// print out name of object being inspected during this execution
-		System.out.println("Object Inspected: " + classObject.getName());
+		if (classObject.isArray())
+			System.out.println("Object Inspected: " + classObject.getCanonicalName());
+		else
+			System.out.println("Object Inspected: " + classObject.getCanonicalName());
 		// print out current status of recursion
 		System.out.println("Recursion Status: " + recursive);
 		
@@ -178,33 +234,26 @@ public class Inspector {
 		inspectSuperclass(classObject);
 		inspectDeclaredMethods(classObject);
 		inspectDeclaredConstructors(classObject);
-		inspectFields(obj, classObject);
 		
-		// add obj to objectsInspected
-		objectsInspected.add(obj.hashCode());
-		// check if recursion is enabled
-		if (recursive) {
-			// if so, we want to traverse to superclass if not null
-			if (classObject.getSuperclass() != null) {
-				// print out header, separating class inspection from superclass inspection
-				System.out.println("~~~~~~~ SUPERCLASS INSPECTION: " + classObject.getName() + " ~~~~~~~");
-				inspectObject(obj, classObject.getSuperclass(), objectsInspected, recursive);
-			}
-			// similarly, we want to traverse to all superinterfaces
-			for (Class classInterface : classObject.getInterfaces()) {
-				// superclass separator
-				System.out.println("~~~~~~~ SUPERINTERFACE INSPECTION: " + classObject.getName() + " ~~~~~~~");
-				inspectObject(obj, classInterface, objectsInspected, recursive);
-			}
+		inspectFields(obj, classObject, objectsInspected, recursive);
+		
+		// if so, we want to traverse to superclass if not null
+		if (classObject.getSuperclass() != null) {
+			// print out header, separating class inspection from superclass inspection
+			System.out.println("~~~~~~~~~~ SUPERCLASS INSPECTION: " + classObject.getCanonicalName() + " ~~~~~~~~~~");
+			inspectObject(obj, classObject.getSuperclass(), objectsInspected, recursive);
+		}
+		// similarly, we want to traverse to all superinterfaces
+		for (Class classInterface : classObject.getInterfaces()) {
+			// superinterface header
+			System.out.println("~~~~~~~~~~ SUPERINTERFACE INSPECTION: " + classObject.getCanonicalName() + " ~~~~~~~~~~");
+			inspectObject(obj, classInterface, objectsInspected, recursive);
 		}
 	}
 	
 	public void inspect(Object obj, boolean recursive) {
-		
-		// initialize ArrayList of int to keep track of Object hashcodes
-		List<Integer> objectsInspected = new ArrayList<Integer>();
+		List<Object> objectsInspected = new ArrayList<Object>();
 		// call helper method inspectObject() to begin recursion
 		inspectObject(obj, obj.getClass(), objectsInspected, recursive);
-		
 	}
 }
